@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
+using Newtonsoft.Json;
+
+using System.Net;
 
 namespace dotnet_example.Controllers
 {
@@ -26,8 +32,30 @@ namespace dotnet_example.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody] string value)
+        public string Post( Object value,[FromHeader(Name = "x-razorpay-signature")] string signature)
         {
+        
+   
+      System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+            string v = value.ToString();
+     
+
+      
+      var hash = new HMACSHA256(Encoding.ASCII.GetBytes("test"));
+      var t =  hash.ComputeHash(Encoding.ASCII.GetBytes(v));
+     string generatedSignature =  BitConverter.ToString(t).Replace("-", "").ToLower();
+        Console.WriteLine("x-razorpay-signature -  "+signature);
+     Console.WriteLine("generatedSignature -    "+generatedSignature);
+
+     if (String.Equals(generatedSignature, signature))  {
+
+         return "signature matched";
+     }else{
+
+  return "signature does not match";
+     }
+
         }
 
         // PUT api/values/5
@@ -42,4 +70,7 @@ namespace dotnet_example.Controllers
         {
         }
     }
+
+
+    
 }
